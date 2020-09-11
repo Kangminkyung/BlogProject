@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+
+<mapper namespace="member">
+
+	<select id="getLoginMember" parameterType="HashMap" resultType="com.spring.member.model.MemberVO">
+		select idx,email,pwd,to_char(registerday,'yyyy-mm-dd') as registerday, status
+		from member 
+	    where status = 1 and email = #{email} and pwd = #{pwd}
+	</select>
+	
+	
+	<insert id="registerMember" parameterType="com.spring.member.model.MemberVO">
+		insert into member(idx, email, pwd, registerday, status) 
+		values(seq_member.nextval, #{email}, #{pwd}, default, default)
+	</insert>
+	
+	<select id="emailDuplicateCheck" parameterType="String" resultType="Integer">
+		SELECT COUNT(*) AS CNT
+		FROM member
+		WHERE email = #{email}
+	</select>
+	
+	
+	<select id="getEmailSearchTotalCount" parameterType="HashMap" resultType="Integer">
+		select count(*)
+		from member		
+		where email like '%'|| #{emailSearchWord} ||'%'
+	</select>
+	
+	<!-- 이메일 검색 리스트 -->
+	<select id="getEmailSearch" parameterType="HashMap" resultType="com.spring.member.model.MemberVO">
+		select rownum as RNO, V.idx, V.email, V.pwd, V.registerday, V.status
+		from 
+    		(
+    		select idx, email, pwd, registerday, status
+    		from member
+    		where email like '%'|| #{emailSearchWord} ||'%'
+   	 		order by idx desc
+    		)V
+		where V.status = 1
+	</select>
+	
+	<!-- 검색어 자동완성 -->
+	<select id="getEmailSearchJSON" parameterType="String" resultType="String">
+	 	select email
+		from member
+		where lower (email) LIKE '%' || lower(#{searchword}) || '%'
+	</select>
+	
+	<update id="updateMyInfo" parameterType="HashMap">
+		update member set pwd = #{pwd}
+		where email = #{email}
+	</update>
+</mapper>

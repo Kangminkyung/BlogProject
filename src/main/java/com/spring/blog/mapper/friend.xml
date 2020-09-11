@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- ==== #7. mapper 기본설정 ==== -->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+
+<!-- ==== #8. 루트 엘리먼트 & 네임스페이스 설정(프로젝트 전체내에서 유일해야 한다.) ==== -->
+<mapper namespace="friend">
+
+<select id="getTotalFriendCount" parameterType="HashMap" resultType="Integer">
+		select count(*) as cnt
+		from friend
+		WHERE fk_email = #{email} and friend_email LIKE '%' || #{searchEmail} || '%'
+	</select>
+	
+<select id="getFriendList" parameterType="HashMap" resultType="com.spring.friend.model.FriendVO">
+		select rno, seq, fk_email, friend_email, friend_date, status
+		from
+    		(
+    		select rownum AS rno, seq, fk_email, friend_email, friend_date, status
+        	from
+        		(
+        		select seq, fk_email, friend_email, friend_date, status
+        		from friend
+        		where fk_email = #{email} and friend_email Like '%' || #{searchEmail}  || '%'
+        		)V
+    		)T
+		where status != 0
+</select>
+ 
+ <select id="getsearchfriendList" parameterType="HashMap" resultType="com.spring.friend.model.FriendVO">
+		select rno, seq, fk_email, friend_email, friend_date, status
+		from
+    		(
+    		select rownum AS rno, seq, fk_email, friend_email, friend_date, status
+        	from
+        		(
+        		select seq, fk_email, friend_email, friend_date, status
+        		from friend
+        		where fk_email = #{email} and friend_email Like '%' || #{searchEmail}  || '%'
+        		)V
+    		)T
+		where status != 0
+</select>
+ 
+ 
+ <!-- 나에게 친구신청을 한사람 목록 -->
+ <select id="getFriendAllowList" parameterType="HashMap" resultType="com.spring.friend.model.FriendVO">
+		select rno, seq, fk_email, friend_email, friend_date, status
+		from
+    		(
+    		select rownum AS rno, seq, fk_email, friend_email, friend_date, status
+        	from
+        		(
+        		select seq, fk_email, friend_email, friend_date, status
+        		from friend
+        		where friend_email = #{email}
+        		)V
+    		)T
+		where status != 0
+</select>
+
+ <update id="getFriendAllow" parameterType="HashMap">
+		update friend set status = 2
+		where friend_email = #{friend_email} and fk_email = #{fk_email}
+</update>
+
+ <update id="getFriendAllowDel" parameterType="HashMap">
+		update friend set status = 1
+		where friend_email = #{friend_email} and fk_email = #{fk_email}
+</update>
+
+	<select id="checkFriendAdd" parameterType="HashMap" resultType="Integer">
+		SELECT COUNT(*) AS CNT
+		FROM friend
+		WHERE fk_email = #{fk_email} and friend_email = #{friend_email}
+	</select>
+
+
+	<insert id="getFriendAdd" parameterType="HashMap">
+		insert into friend(seq, fk_email, friend_email, friend_date, status) 
+		values(seq_friend.nextval, #{fk_email}, #{friend_email}, default, 1)
+	</insert>
+	
+	<delete id="getFriendDel" parameterType="HashMap">
+		delete friend
+		where fk_email = #{fk_email} and friend_email = #{friend_email}
+	</delete>
+</mapper>
